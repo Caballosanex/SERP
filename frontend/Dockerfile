@@ -6,8 +6,9 @@ WORKDIR /app
 # Copiar archivos de dependencias primero para aprovechar la caché de Docker
 COPY package.json ./
 
-# Instalar dependencias y limpiar caché
+# Instalar dependencias, añadir antd y limpiar caché
 RUN npm install && \
+    npm install --save antd && \
     npm cache clean --force
 
 # Copiar el resto de los archivos de la aplicación

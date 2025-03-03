@@ -1,49 +1,30 @@
-from typing import List, Optional, Dict
-from pydantic import BaseModel # type: ignore No warning about pydantic. Imported in requirements.txt
-from datetime import datetime
-#Import Nokia Api Service
-from src.services.opencameragateway import nokia_api_call
-from src.routes.resources import devices
+from fastapi import APIRouter, HTTPException, Depends, status
+from typing import List, Optional
+import logging
 
-from fastapi import APIRouter, HTTPException # type: ignore No warning about pydantic. Imported in requirements.txt
+router = APIRouter(prefix="/location", tags=["Location"])
 
-router = APIRouter()
+@router.get("")
+async def get_locations():
+    """Obtener todas las ubicaciones"""
+    return {"message": "Lista de ubicaciones"}
 
+@router.get("/{location_id}")
+async def get_location(location_id: int):
+    """Obtener detalles de una ubicación por ID"""
+    return {"message": f"Detalles de la ubicación {location_id}"}
 
+@router.post("", status_code=status.HTTP_201_CREATED)
+async def create_location(location_data: dict):
+    """Crear una nueva ubicación"""
+    return {"message": "Ubicación creada", "data": location_data}
 
+@router.put("/{location_id}")
+async def update_location(location_id: int, location_data: dict):
+    """Actualizar una ubicación existente"""
+    return {"message": f"Ubicación {location_id} actualizada", "data": location_data}
 
-class Location(BaseModel):
-    latitude: float
-    longitude: float
-    accuracy: Optional[float] = None
-    speed: Optional[float] = None
-    heading: Optional[float] = None
-    timestamp: Optional[datetime] = None
-
-
-
-# Location endpoints
-@router.get("/api/devices/{device_id}/location", response_model=Location, tags=["Location"])
-async def get_device_location(device_id: str):
-    """Get current device location"""
-    if device_id not in devices:
-        raise HTTPException(status_code=404, detail="Device not found")
-
-    response = await nokia_api_call(
-        "POST",
-        "location",
-        {"device_id": device_id, "accuracy_level": "high"}
-    )
-
-    location = Location(
-        latitude=response["latitude"],
-        longitude=response["longitude"],
-        accuracy=response.get("accuracy"),
-        speed=response.get("speed"),
-        heading=response.get("heading"),
-        timestamp=datetime.now()
-    )
-
-    devices[device_id].location = location
-    return location
-#END LOCATION ENDPOINTS 
+@router.delete("/{location_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_location(location_id: int):
+    """Eliminar una ubicación"""
+    return {"message": f"Ubicación {location_id} eliminada"} 

@@ -14,6 +14,7 @@ import Dashboard from './pages/dashboard/Dashboard';
 import ResourcePersonnelDashboard from './pages/resource/ResourcePersonnelDashboard';
 import EmergencyOperatorDashboard from './pages/operator/EmergencyOperatorDashboard';
 import NotFound from './pages/NotFound';
+import DeviceManagement from './pages/devices/DeviceManagement';
 
 // Rutas protegidas
 const ProtectedRoute = ({ children, requiredRole }) => {
@@ -83,6 +84,13 @@ function App() {
           <Route path="operator" element={
             <ProtectedRoute requiredRole="emergency_operator">
               <EmergencyOperatorDashboard />
+            </ProtectedRoute>
+          } />
+          
+          {/* Gestión de dispositivos (Nokia NAC) */}
+          <Route path="devices" element={
+            <ProtectedRoute requiredRole="emergency_center">
+              <DeviceManagement />
             </ProtectedRoute>
           } />
         </Route>

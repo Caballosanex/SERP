@@ -30,7 +30,8 @@ import {
   Settings as SettingsIcon,
   Brightness4 as Brightness4Icon,
   Brightness7 as Brightness7Icon,
-  ExitToApp as ExitToAppIcon
+  ExitToApp as ExitToAppIcon,
+  DevicesOther as DevicesIcon
 } from '@mui/icons-material';
 import { toggleSidebar } from '../redux/slices/uiSlice';
 
@@ -90,6 +91,11 @@ const MainLayout = () => {
           text: 'Gestió de Recursos',
           icon: <PeopleIcon />,
           path: '/resources'
+        },
+        {
+          text: 'Dispositius Nokia NAC',
+          icon: <DevicesIcon />,
+          path: '/devices'
         },
         {
           text: 'Configuració',

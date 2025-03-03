@@ -10,8 +10,7 @@ services:
       - /app/__pycache__
     environment:
       - DEBUG=1
-    command: ["sleep", "infinity"]
-    #command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5001", "--reload"]
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5001", "--reload"]
     # uvicorn main:app --host 0.0.0.0 --port 5001 --reload
   
   SERP-db:
@@ -39,3 +38,19 @@ services:
     depends_on:
       - backend
     stdin_open: true
+
+  nokia-nac:
+    build:
+      context: ./SERP-nokia-nac
+      dockerfile: Dockerfile
+    container_name: SERP-nokia-nac
+    ports:
+      - "5002:5002"
+    volumes:
+      - ./SERP-nokia-nac:/app
+      - /app/__pycache__
+    environment:
+      - NOKIA_NAC_API_KEY=${NOKIA_NAC_API_KEY}
+    depends_on:
+      - backend
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5002", "--reload"]

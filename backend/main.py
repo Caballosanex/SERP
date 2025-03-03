@@ -32,12 +32,14 @@ app.add_middleware(
 )
 
 
-from src.routes import emergencies, location, qosod, resources
+from src.routes import emergencies, location, qosod, resources, nokia_nac, devices
 
 app.include_router(emergencies.router)
 app.include_router(location.router)
 app.include_router(qosod.router)
 app.include_router(resources.router)
+app.include_router(nokia_nac.router)
+app.include_router(devices.router)
 
 
 # Config DB
@@ -54,4 +56,4 @@ async def startup_event():
 
 @app.on_event("shutdown")
 async def shutdown():
-    await sessionmanager.close()  # Cleanup DB connecti
+    await sessionmanager.close()  # Cleanup DB connection
