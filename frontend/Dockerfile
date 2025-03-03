@@ -4,10 +4,10 @@ FROM node:20-alpine as builder
 WORKDIR /app
 
 # Copiar archivos de dependencias primero para aprovechar la caché de Docker
-COPY package.json package-lock.json* ./
+COPY package.json ./
 
 # Instalar dependencias y limpiar caché
-RUN npm ci && \
+RUN npm install && \
     npm cache clean --force
 
 # Copiar el resto de los archivos de la aplicación
@@ -24,7 +24,7 @@ FROM node:20-alpine
 WORKDIR /app
 
 # Copiar solo los archivos necesarios
-COPY --from=builder /app/package.json /app/package-lock.json* ./
+COPY --from=builder /app/package.json ./
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/src ./src
