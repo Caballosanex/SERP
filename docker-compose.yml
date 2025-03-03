@@ -1,7 +1,7 @@
 # filepath: docker-compose.yml
 services:
   backend:
-    build: ./backend
+    build: ./backend 
     container_name: SERP-backend
     ports:
       - "5001:5001"
