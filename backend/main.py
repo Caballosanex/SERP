@@ -20,7 +20,7 @@ settings
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="SEiRP Backend API")
+app = FastAPI(title="SERP Backend API")
 
 # CORS configuration
 app.add_middleware(

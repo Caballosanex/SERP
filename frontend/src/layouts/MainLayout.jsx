@@ -139,7 +139,7 @@ const MainLayout = () => {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-            SERP - Sistema d'Emergències
+            SERP - Sistema d'Emergències i Resposta Prioritaria
           </Typography>
           
           {/* Botón de Notificaciones */}

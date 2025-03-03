@@ -1,6 +1,6 @@
 # Frontend Unificat de SERP
 
-Aquesta és l'aplicació frontend unificada per al Sistema d'Emergències i Recursos de Protecció (SERP). L'aplicació consolida tres interfícies diferents en una sola aplicació React amb vistes basades en rols.
+Aquesta és l'aplicació frontend unificada per al Sistema d'Emergències i Resposta Prioritaria (SERP). L'aplicació consolida tres interfícies diferents en una sola aplicació React amb vistes basades en rols.
 
 ## Característiques Principals
 

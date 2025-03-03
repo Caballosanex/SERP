@@ -1,4 +1,4 @@
-# 🔧 Backend - Sistema de Emergencias
+# 🔧 Backend - Sistema d'Emergencies i Resposta Prioritaria
 API central que gestiona la lógica de negocio y conecta con las APIs simuladas de Nokia.
 
 ## 🛠️ Tecnologías

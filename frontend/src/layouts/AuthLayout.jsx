@@ -31,7 +31,7 @@ const AuthLayout = () => {
       <AppBar position="static" color="transparent" elevation={0}>
         <Toolbar>
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            SERP - Sistema d'Emergències i Recursos de Protecció
+            SERP - Sistema d'Emergències i Resposta Prioritaria
           </Typography>
           <IconButton onClick={toggleTheme} color="inherit">
             {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
@@ -71,7 +71,7 @@ const AuthLayout = () => {
               SERP
             </Typography>
             <Typography variant="body1" align="center" color="textSecondary">
-              Sistema d'Emergències i Recursos de Protecció
+              Sistema d'Emergències i Resposta Prioritaria
             </Typography>
           </Box>
           
