@@ -7,7 +7,7 @@ from datetime import datetime
 from typing import Optional
 
 class User(SQLModel, table=True):
-    __tablename__ = "users"
+    # __tablename__ = "users"
 
     id: uuid_pkg.UUID = Field(
         default_factory=uuid_pkg.uuid4,

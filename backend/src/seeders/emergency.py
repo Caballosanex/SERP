@@ -2,7 +2,7 @@ from faker import Faker
 from src.seeders.address import address_seeder
 from src.seeders.location import location_seeder
 from src.seeders.resource import resource_seeder
-from src.models.emergency import Emergency, EmergencyStatusEnum
+from src.models.emergency import Emergency, EmergencyType, PriorityType, StatusType
 import enum
 import random
 import string
@@ -19,9 +19,10 @@ async def emergency_seeder():
 
     name = random.choice(resourcesNames) + "-" + str(random.randint(100, 999))
 
-    emergency_type = "That's a pseudorandom type for an emergency"
-    priority = random.randint(0, 7)
-    emergency_status = random.choice(list(EmergencyStatusEnum))
+    description = "That's a pseudorandom type for an emergency"
+    priority = random.choice(list(PriorityType))
+    emergency_type = random.choice(list(EmergencyType))
+    status = random.choice(list(StatusType))
 
     location_emergency = await location_seeder()
     address_emergency = await address_seeder()
@@ -44,9 +45,10 @@ async def emergency_seeder():
 
         name = name,
 
-        emergency_type = emergency_type,
+        description = description,
         priority = priority,
-        emergency_status = emergency_status,
+        emergency_type = emergency_type,
+        status = status,
 
         location_emergency = location_emergency,
         address_emergency = address_emergency,
