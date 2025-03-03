@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Box, 
   Typography, 
@@ -31,6 +31,7 @@ const MapComponent = ({ onLocationSelect }) => {
 
 const NovaEmergencia = () => {
   const navigate = useNavigate();
+  const [resources, setResources] = useState([]);
   const [formData, setFormData] = React.useState({
     title: '',
     description: '',
@@ -38,11 +39,19 @@ const NovaEmergencia = () => {
     type: '',
     priority: '',
     latitude: '',
-    longitude: ''
+    longitude: '',
+    selectedResource: ''
   });
 
   const [openMap, setOpenMap] = React.useState(false);
   const [showSuccess, setShowSuccess] = React.useState(false);
+
+  useEffect(() => {
+    // Cargar recursos disponibles
+    const storedResources = JSON.parse(localStorage.getItem('resources') || '[]');
+    const availableResources = storedResources.filter(resource => resource.status === 'disponible');
+    setResources(availableResources);
+  }, []);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -79,6 +88,18 @@ const NovaEmergencia = () => {
     // Añadir nueva incidencia
     const updatedIncidents = [...existingIncidents, newIncident];
     
+    // Actualizar el estado del recurso seleccionado
+    if (formData.selectedResource) {
+      const storedResources = JSON.parse(localStorage.getItem('resources') || '[]');
+      const updatedResources = storedResources.map(resource => {
+        if (resource.id === parseInt(formData.selectedResource)) {
+          return { ...resource, status: 'ocupado' };
+        }
+        return resource;
+      });
+      localStorage.setItem('resources', JSON.stringify(updatedResources));
+    }
+    
     // Guardar en LocalStorage
     localStorage.setItem('incidents', JSON.stringify(updatedIncidents));
 
@@ -91,13 +112,27 @@ const NovaEmergencia = () => {
       type: '',
       priority: '',
       latitude: '',
-      longitude: ''
+      longitude: '',
+      selectedResource: ''
     });
 
     // Ocultar el mensaje después de 3 segundos
     setTimeout(() => {
       setShowSuccess(false);
     }, 3000);
+  };
+
+  const handleCancel = () => {
+    setFormData({
+      title: '',
+      description: '',
+      location: '',
+      type: '',
+      priority: '',
+      latitude: '',
+      longitude: '',
+      selectedResource: ''
+    });
   };
 
   const modalStyle = {
@@ -220,9 +255,27 @@ const NovaEmergencia = () => {
               </FormControl>
             </Grid>
             
-            <Grid item xs={12}>
-              <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-                <Button variant="outlined">
+            <Grid item xs={12} md={6}>
+              <FormControl fullWidth>
+                <InputLabel>Recurs Assignat</InputLabel>
+                <Select
+                  name="selectedResource"
+                  value={formData.selectedResource}
+                  label="Recurs Assignat"
+                  onChange={handleChange}
+                >
+                  {resources.map((resource) => (
+                    <MenuItem key={resource.id} value={resource.id}>
+                      {resource.name} - {resource.type}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            
+            <Grid item xs={12} md={6}>
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, height: '100%', alignItems: 'center' }}>
+                <Button variant="outlined" onClick={handleCancel}>
                   Cancel·lar
                 </Button>
                 <Button variant="contained" type="submit">

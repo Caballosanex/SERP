@@ -33,7 +33,8 @@ import {
   ExitToApp as ExitToAppIcon,
   Add as AddIcon,
   Edit as EditIcon,
-  Assignment as AssignmentIcon
+  Assignment as AssignmentIcon,
+  LocalShipping as ResourcesIcon
 } from '@mui/icons-material';
 import { toggleSidebar } from '../redux/slices/uiSlice';
 
@@ -101,6 +102,11 @@ const MainLayout = () => {
         path: '/emergencies/seguiment'
       },
       {
+        text: 'Recursos',
+        icon: <ResourcesIcon />,
+        path: '/devices/resources'
+      },
+      {
         text: 'Gestió Usuaris',
         icon: <PeopleIcon />,
         path: '/usuaris'
@@ -108,14 +114,7 @@ const MainLayout = () => {
     ];
     
     if (user?.role === 'emergency_center') {
-      return [
-        ...commonItems,
-        {
-          text: 'Configuració',
-          icon: <SettingsIcon />,
-          path: '/settings'
-        }
-      ];
+      return commonItems;
     } else if (user?.role === 'resource_personnel') {
       return [
         ...commonItems,

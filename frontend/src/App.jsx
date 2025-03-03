@@ -18,6 +18,7 @@ import NovaEmergencia from './pages/emergencies/NovaEmergencia';
 import EditorIncidents from './pages/emergencies/EditorIncidents';
 import Seguiment from './pages/emergencies/Seguiment';
 import GestioUsuaris from './pages/usuaris/GestioUsuaris';
+import Resources from './pages/devices/Resources';
 
 // Rutas protegidas
 const ProtectedRoute = ({ children, requiredRole }) => {
@@ -91,6 +92,15 @@ function App() {
             <Route path="seguiment" element={
               <ProtectedRoute>
                 <Seguiment />
+              </ProtectedRoute>
+            } />
+          </Route>
+          
+          {/* Rutas de Dispositivos */}
+          <Route path="devices">
+            <Route path="resources" element={
+              <ProtectedRoute>
+                <Resources />
               </ProtectedRoute>
             } />
           </Route>

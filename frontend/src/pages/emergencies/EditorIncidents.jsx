@@ -132,6 +132,18 @@ const EditorIncidents = () => {
         // Si el estado es 'resolved', forzamos la prioridad a 'resolved'
         if (editForm.status === 'resolved') {
           updatedIncident.priority = 'resolved';
+          
+          // Si hay un recurso asignado, lo marcamos como disponible
+          if (incident.selectedResource) {
+            const storedResources = JSON.parse(localStorage.getItem('resources') || '[]');
+            const updatedResources = storedResources.map(resource => {
+              if (resource.id === parseInt(incident.selectedResource)) {
+                return { ...resource, status: 'disponible' };
+              }
+              return resource;
+            });
+            localStorage.setItem('resources', JSON.stringify(updatedResources));
+          }
         }
         
         return updatedIncident;
