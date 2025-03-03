@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { 
   Grid, 
   Paper, 
@@ -27,19 +26,41 @@ import {
 } from '@mui/icons-material';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import { fetchEmergencies } from '../../redux/slices/emergenciesSlice';
-import { fetchResources } from '../../redux/slices/resourcesSlice';
-import { fetchAlerts } from '../../redux/slices/alertsSlice';
-import { setCurrentView } from '../../redux/slices/uiSlice';
 
 // Panel de estadísticas
 const StatPanel = ({ title, value, color }) => (
-  <Card elevation={2} sx={{ height: '100%' }}>
-    <CardContent>
-      <Typography variant="h6" color="textSecondary" gutterBottom>
+  <Card elevation={2} sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <CardContent sx={{ 
+      flex: 1, 
+      display: 'flex', 
+      flexDirection: 'column',
+      justifyContent: 'space-between',
+      minHeight: '150px'  // Altura mínima fija para todos los paneles
+    }}>
+      <Typography 
+        variant="h6" 
+        color="textSecondary" 
+        sx={{ 
+          minHeight: '48px',  // Altura fija para el título
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          textAlign: 'center'
+        }}
+      >
         {title}
       </Typography>
-      <Typography variant="h3" color={color} align="center">
+      <Typography 
+        variant="h3" 
+        color={color} 
+        align="center"
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flex: 1
+        }}
+      >
         {value}
       </Typography>
     </CardContent>
@@ -48,23 +69,63 @@ const StatPanel = ({ title, value, color }) => (
 
 // Componente de dashboard
 const Dashboard = () => {
-  const dispatch = useDispatch();
   const [tabValue, setTabValue] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentView, setCurrentView] = useState('list');
+  const [isLoading, setIsLoading] = useState(true);
   
-  const emergencies = useSelector(state => state.emergencies.emergencies);
-  const emergenciesStatus = useSelector(state => state.emergencies.status);
-  const resources = useSelector(state => state.resources.resources);
-  const resourcesStatus = useSelector(state => state.resources.status);
-  const alerts = useSelector(state => state.alerts.alerts);
-  const alertsStatus = useSelector(state => state.alerts.status);
-  const currentView = useSelector(state => state.ui.currentView);
-  
+  // Estados para los datos
+  const [emergencies, setEmergencies] = useState([]);
+  const [resources, setResources] = useState([]);
+  const [alerts, setAlerts] = useState([]);
+
+  // Cargar y sincronizar datos desde localStorage
+  useEffect(() => {
+    const loadData = () => {
+      setIsLoading(true);
+      try {
+        // Cargar emergencias
+        const savedIncidents = localStorage.getItem('incidents');
+        if (savedIncidents) {
+          setEmergencies(JSON.parse(savedIncidents));
+        }
+        
+        // Aquí podrías cargar recursos y alertas si los tienes en localStorage
+        setResources([]);  // Por ahora vacío
+        setAlerts([]);    // Por ahora vacío
+      } catch (error) {
+        console.error('Error al cargar datos:', error);
+      }
+      setIsLoading(false);
+    };
+
+    // Cargar datos inicialmente
+    loadData();
+
+    // Escuchar cambios en localStorage
+    const handleStorageChange = (e) => {
+      if (e.key === 'incidents') {
+        const savedIncidents = localStorage.getItem('incidents');
+        if (savedIncidents) {
+          setEmergencies(JSON.parse(savedIncidents));
+        }
+      }
+    };
+
+    // Suscribirse a cambios en localStorage
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Cleanup
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
+
   // Filtrar emergencias por búsqueda
   const filteredEmergencies = emergencies.filter(emergency => 
-    emergency.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    emergency.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    emergency.description.toLowerCase().includes(searchTerm.toLowerCase())
+    emergency.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    emergency.location?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    emergency.description?.toLowerCase().includes(searchTerm.toLowerCase())
   );
   
   // Estadísticas
@@ -75,17 +136,11 @@ const Dashboard = () => {
   const assignedResources = resources.filter(r => r.emergencyId).length;
   const activeAlerts = alerts.filter(a => !a.resolved).length;
   
-  useEffect(() => {
-    // Cargar datos al montar el componente
-    dispatch(fetchEmergencies());
-    dispatch(fetchResources());
-    dispatch(fetchAlerts());
-  }, [dispatch]);
-  
   const handleRefresh = () => {
-    dispatch(fetchEmergencies());
-    dispatch(fetchResources());
-    dispatch(fetchAlerts());
+    const savedIncidents = localStorage.getItem('incidents');
+    if (savedIncidents) {
+      setEmergencies(JSON.parse(savedIncidents));
+    }
   };
   
   const handleTabChange = (event, newValue) => {
@@ -93,19 +148,13 @@ const Dashboard = () => {
   };
   
   const handleViewChange = (view) => {
-    dispatch(setCurrentView(view));
+    setCurrentView(view);
   };
   
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
   };
   
-  // Verificar si los datos están cargando
-  const isLoading = 
-    emergenciesStatus === 'loading' || 
-    resourcesStatus === 'loading' || 
-    alertsStatus === 'loading';
-    
   return (
     <Box sx={{ flexGrow: 1 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -30,7 +30,10 @@ import {
   Settings as SettingsIcon,
   Brightness4 as Brightness4Icon,
   Brightness7 as Brightness7Icon,
-  ExitToApp as ExitToAppIcon
+  ExitToApp as ExitToAppIcon,
+  Add as AddIcon,
+  Edit as EditIcon,
+  Assignment as AssignmentIcon
 } from '@mui/icons-material';
 import { toggleSidebar } from '../redux/slices/uiSlice';
 
@@ -38,6 +41,7 @@ const drawerWidth = 240;
 
 const MainLayout = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { mode, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
   const sidebarOpen = useSelector(state => state.ui.sidebarOpen);
@@ -80,17 +84,32 @@ const MainLayout = () => {
         text: 'Tauler Principal',
         icon: <DashboardIcon />,
         path: '/dashboard'
+      },
+      {
+        text: 'Nova Emergència',
+        icon: <AddIcon />,
+        path: '/emergencies/nova'
+      },
+      {
+        text: 'Editor d\'Incidents',
+        icon: <EditIcon />,
+        path: '/emergencies/editor'
+      },
+      {
+        text: 'Seguiment',
+        icon: <AssignmentIcon />,
+        path: '/emergencies/seguiment'
+      },
+      {
+        text: 'Gestió Usuaris',
+        icon: <PeopleIcon />,
+        path: '/usuaris'
       }
     ];
     
     if (user?.role === 'emergency_center') {
       return [
         ...commonItems,
-        {
-          text: 'Gestió de Recursos',
-          icon: <PeopleIcon />,
-          path: '/resources'
-        },
         {
           text: 'Configuració',
           icon: <SettingsIcon />,
@@ -107,19 +126,7 @@ const MainLayout = () => {
         }
       ];
     } else if (user?.role === 'emergency_operator') {
-      return [
-        ...commonItems,
-        {
-          text: 'Crear Emergència',
-          icon: <LocationIcon />,
-          path: '/create-emergency'
-        },
-        {
-          text: 'Assignar Recursos',
-          icon: <PeopleIcon />,
-          path: '/assign-resources'
-        }
-      ];
+      return commonItems;
     }
     
     return commonItems;
@@ -241,7 +248,11 @@ const MainLayout = () => {
         <Box sx={{ overflow: 'auto' }}>
           <List>
             {getSidebarItems().map((item) => (
-              <ListItem button key={item.text}>
+              <ListItem 
+                button 
+                key={item.text}
+                onClick={() => navigate(item.path)}
+              >
                 <ListItemIcon>
                   {item.icon}
                 </ListItemIcon>
@@ -257,11 +268,8 @@ const MainLayout = () => {
         flexGrow: 1, 
         p: 3, 
         width: `calc(100% - ${sidebarOpen ? drawerWidth : 0}px)`,
-        ml: sidebarOpen ? `${drawerWidth}px` : 0,
-        transition: (theme) => theme.transitions.create(['margin', 'width'], {
-          easing: theme.transitions.easing.sharp,
-          duration: theme.transitions.duration.enteringScreen,
-        }),
+        marginLeft: '0px !important',
+        transition: 'none !important'
       }}>
         <Toolbar /> {/* Espacio para el AppBar */}
         <Outlet />

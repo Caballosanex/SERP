@@ -14,6 +14,10 @@ import Dashboard from './pages/dashboard/Dashboard';
 import ResourcePersonnelDashboard from './pages/resource/ResourcePersonnelDashboard';
 import EmergencyOperatorDashboard from './pages/operator/EmergencyOperatorDashboard';
 import NotFound from './pages/NotFound';
+import NovaEmergencia from './pages/emergencies/NovaEmergencia';
+import EditorIncidents from './pages/emergencies/EditorIncidents';
+import Seguiment from './pages/emergencies/Seguiment';
+import GestioUsuaris from './pages/usuaris/GestioUsuaris';
 
 // Rutas protegidas
 const ProtectedRoute = ({ children, requiredRole }) => {
@@ -69,6 +73,32 @@ function App() {
           <Route path="dashboard" element={
             <ProtectedRoute requiredRole="emergency_center">
               <Dashboard />
+            </ProtectedRoute>
+          } />
+          
+          {/* Rutas de Emergencias */}
+          <Route path="emergencies">
+            <Route path="nova" element={
+              <ProtectedRoute>
+                <NovaEmergencia />
+              </ProtectedRoute>
+            } />
+            <Route path="editor" element={
+              <ProtectedRoute>
+                <EditorIncidents />
+              </ProtectedRoute>
+            } />
+            <Route path="seguiment" element={
+              <ProtectedRoute>
+                <Seguiment />
+              </ProtectedRoute>
+            } />
+          </Route>
+          
+          {/* Gestión de Usuarios */}
+          <Route path="usuaris" element={
+            <ProtectedRoute>
+              <GestioUsuaris />
             </ProtectedRoute>
           } />
           
