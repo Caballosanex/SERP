@@ -61,19 +61,19 @@ const Dashboard = () => {
   const currentView = useSelector(state => state.ui.currentView);
   
   // Filtrar emergencias por búsqueda
-  const filteredEmergencies = emergencies.filter(emergency => 
+  const filteredEmergencies = Array.isArray(emergencies) ? emergencies.filter(emergency => 
     emergency.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     emergency.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
     emergency.description.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  ) : [];
   
   // Estadísticas
-  const activeEmergencies = emergencies.filter(e => e.status === 'active').length;
-  const pendingEmergencies = emergencies.filter(e => e.status === 'pending').length;
-  const resolvedEmergencies = emergencies.filter(e => e.status === 'resolved').length;
-  const totalResources = resources.length;
-  const assignedResources = resources.filter(r => r.emergencyId).length;
-  const activeAlerts = alerts.filter(a => !a.resolved).length;
+  const activeEmergencies = Array.isArray(emergencies) ? emergencies.filter(e => e.status === 'active').length : 0;
+  const pendingEmergencies = Array.isArray(emergencies) ? emergencies.filter(e => e.status === 'pending').length : 0;
+  const resolvedEmergencies = Array.isArray(emergencies) ? emergencies.filter(e => e.status === 'resolved').length : 0;
+  const totalResources = Array.isArray(resources) ? resources.length : 0;
+  const assignedResources = Array.isArray(resources) ? resources.filter(r => r.emergencyId).length : 0;
+  const activeAlerts = Array.isArray(alerts) ? alerts.filter(a => !a.resolved).length : 0;
   
   useEffect(() => {
     // Cargar datos al montar el componente
