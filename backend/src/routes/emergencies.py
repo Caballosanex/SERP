@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field # type: ignore No warning about pydantic. 
 from datetime import datetime
 import uuid
 from fastapi import APIRouter, HTTPException, Depends # type: ignore No warning about pydantic. Imported in requirements.txt
-from src.routes.resources import devices
+# from src.routes.resources import devices
 from src.routes.qosod import QoSConfig, activate_device_qos, deactivate_device_qos
 
 # Importar servicio de asignaciones de emergencia
@@ -13,19 +13,23 @@ from src.configs.database import get_db
 from typing import Annotated
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-router = APIRouter()
+
 
 from enum import Enum
 
 from src.models.emergency import Emergency, EmergencyType, StatusType, PriorityType
 from src.models.resource import Resource
+from src.models.location import Location
+from src.models.address import Address
+
 import json
 
 import uuid as uuid_pkg
 from fastapi.responses import ORJSONResponse
 
+router = APIRouter()
 
-# Alert endpoints
+# LIST ALL EMERGENCIES
 @router.get("/api/alerts", response_model=List[Emergency], tags=["Alerts"])
 async def list_alerts(session: Annotated[AsyncSession, Depends(get_db)]):
     """List all alerts"""
@@ -35,41 +39,8 @@ async def list_alerts(session: Annotated[AsyncSession, Depends(get_db)]):
     items = emergencies.scalars().all()
     return items
 
-# @router.post("/api/alerts", response_model=Alert, status_code=201, tags=["Alerts"])
-# async def create_alert(alert: AlertCreate):
-#     """Create a new alert"""
-#     if not 1 <= alert.priority <= 5:
-#         raise HTTPException(
-#             status_code=400,
-#             detail="Priority must be between 1 and 5"
-#         )
 
-#     new_alert = Alert(
-#         id=str(uuid.uuid4()),
-#         type=alert.type,
-#         location=alert.location,
-#         description=alert.description,
-#         priority=alert.priority,
-#         timestamp=datetime.now()
-#     )
-#     alerts[new_alert.id] = new_alert
-
-#     # Asignar dispositivos automáticamente según el tipo de alerta
-#     await assign_devices_to_alert(new_alert)
-#     return new_alert
-
-class EmergencyType(str, Enum):
-    Incendi = "Incendi"
-    Emergencia_Medica = "Emergencia Medica"
-    Accident = "Accident"
-    Desastre_Natural = "Desastre Natural"
-    Altres = "Altres"
-
-class PriorityType(str, Enum):
-    Alta = "Alta"
-    Mitjana = "Mitjana"
-    Baixa = "Baixa"
-
+# CREATE EMERGENCY
 class EmergencyRequest(BaseModel):
     name: str = Field(..., max_length=64)
     description: str = Field(..., max_length=512)
@@ -77,9 +48,6 @@ class EmergencyRequest(BaseModel):
     longitude: float = Field(..., ge=-180, le=180)
     emergency_type: EmergencyType
     priority: PriorityType
-
-from src.models.location import Location
-from src.models.address import Address
 
 
 @router.post("/api/alerts", response_model=Emergency, status_code=201, tags=["Alerts"])
@@ -115,124 +83,20 @@ async def create_alert(request: EmergencyRequest, db: AsyncSession = Depends(get
     
     return {"message": "Alert Created", "alert_id": e_id}
 
-# async def assign_devices_to_alert(alert: Alert):
-#     """Asigna dispositivos a una alerta basándose en el tipo"""
-#     device_type = get_device_type_for_alert(alert.type)
-#     for device_id, device in devices.items():
-#         if device.type == device_type:
-#             emergency_assignments.assign_device(alert.id, device_id)
-#             # Activar QoS para el dispositivo asignado
-#             await activate_device_qos(device_id, QoSConfig(priority_level=alert.priority))
-
-
-# def get_device_type_for_alert(alert_type: str) -> str:
-#     """Maps alert types to device types"""
-#     type_mapping = {
-#         "medical": "ambulance",
-#         "fire": "fire_truck",
-#         "police": "police_car"
-#     }
-#     return type_mapping.get(alert_type.lower(), "unknown")
-
-
-# @router.get("/api/devices/{device_id}/assignments", response_model=List[Alert], tags=["Devices"])
-# async def get_device_assignments(device_id: str):
-#     """Get alerts assigned to a specific device"""
-#     if device_id not in devices:
-#         raise HTTPException(status_code=404, detail="Device not found")
-    
-#     device = devices[device_id]
-#     device_type = device.type
-#     alert_type = get_alert_type_for_device(device_type)
-    
-#     assigned_alerts = []
-#     for alert_id, alert in alerts.items():
-#         if alert.status == "active" and alert.type == alert_type:
-#             if device_id in emergency_assignments.get_alert_devices(alert_id):
-#                 assigned_alerts.append(alert)
-    
-#     return assigned_alerts
-
-class AssigmentRequest(BaseModel):
-    resource_id: str = Field(uuid_pkg.uuid4)
-
-
-@router.get("/api/devices/{resource_id}/assignments", response_model=List[Emergency], tags=["Devices"])
-# async def get_device_assignments(device_id: str):
-async def get_device_assignments(resource_id: str, db: AsyncSession = Depends(get_db)):
-    """Get alerts assigned to a specific device"""
-    stmt = select(Resource).where(Resource.id == resource_id)
-    result = await db.execute(stmt)
-    if not result:
-        raise HTTPException(status_code=404, detail="Example not found")
-    return result.scalars().first()
-
-
-
-# def get_alert_type_for_device(device_type: str) -> str:
-#     """Maps device types to alert types"""
-#     type_mapping = {
-#         "ambulance": "medical",
-#         "fire_truck": "fire",
-#         "police_car": "police"
-#     }
-#     return type_mapping.get(device_type.lower(), "unknown")
-
-
-# @router.get("/api/alerts/{alert_id}", response_model=Alert, tags=["Alerts"])
-# async def get_alert(alert_id: str):
-#     """Get alert details"""
-#     if alert_id not in alerts:
-#         raise HTTPException(status_code=404, detail="Alert not found")
-#     return alerts[alert_id]
-
-class EmergencyGetDetailsRequest(BaseModel):
-    emergency_id: str = Field(uuid_pkg.uuid4)
-
-
+# READ EMERGENCY
 @router.get("/api/alerts/{alert_id}", response_model=Emergency, tags=["Alerts"])
+# @router.get("/api/alerts/{alert_id}", tags=["Alerts"])
 async def get_alert(alert_id: str, db: AsyncSession = Depends(get_db)):
     """Get alert details"""
     stmt = select(Emergency).where(Emergency.id == alert_id)
     result = await db.execute(stmt)
-    if not result:
-        raise HTTPException(status_code=404, detail="Example not found")
-    return result.scalars().first()
+    emergency = result.scalar_one_or_none()
+    if emergency is None:
+        raise HTTPException(status_code=404, detail="Emergency not found")
+    return emergency
 
 
-
-# @router.patch("/api/alerts/{alert_id}", response_model=Alert)
-# async def update_alert(alert_id: str, alert_update: AlertUpdate):
-#     """Update an alert"""
-#     if alert_id not in alerts:
-#         raise HTTPException(status_code=404, detail="Alert not found")
-
-#     alert = alerts[alert_id]
-#     update_data = alert_update.dict(exclude_unset=True)
-
-#     # Si estamos resolviendo la alerta
-#     if update_data.get("status") == "resolved":
-#         alert_type = alert.type
-#         device_type = get_required_device_type(alert_type)
-
-#         # Buscar el dispositivo asignado a esta alerta
-#         for device_id, device in devices.items():
-#             if device.type == device_type and device.qos_status == "active":
-#                 # Verificar si hay otras alertas activas que requieren este dispositivo
-#                 has_other_active_alerts = any(
-#                     a.status == "active"
-#                     and a.id != alert_id
-#                     and get_required_device_type(a.type) == device_type
-#                     for a in alerts.values()
-#                 )
-
-#                 # Solo desactivar QoS si no hay otras alertas activas
-#                 if not has_other_active_alerts:
-#                     await deactivate_device_qos(device_id)
-
-#     alert = alerts[alert_id] = alert.copy(update=update_data)
-#     return alert
-
+# UPDATE EMERGENCY
 class EmergencyUpdateRequest(BaseModel):
     name: Optional[str] = None
     description: Optional[str]  = None
@@ -263,16 +127,11 @@ async def update_alert(alert_id: str, request: EmergencyUpdateRequest, db: Async
     """Update an alert"""
     stmt = select(Emergency).where(Emergency.id == alert_id)
     result = await db.execute(stmt)
-
     emergency = result.scalars().first() 
     if not emergency:
         raise HTTPException(status_code=404, detail="Example not found")
 
     #Update Emergency
-    # for key, value in request.items():
-    #     setattr(emergency, key, value)
-    # db.commit()
-
     for field, value in request.dict(exclude_unset=True).items():
         setattr(emergency, field, value)
     db.commit()
@@ -305,3 +164,64 @@ async def update_alert(alert_id: str, request: EmergencyUpdateRequest, db: Async
     # return {"message": "Emergency updated", "emergecy_id": emergency.id}
     return [{"emergecy_id": str(emergency.id), "message": "Updated"}]
 
+# DELETE A EMERGENCY
+@router.delete("/api/alerts/{emergency_id}", status_code=200)
+async def delete_device(db: Annotated[AsyncSession, Depends(get_db)], emergency_id: str):
+    """Delete an emergency"""
+
+    try:
+        emergency_uuid = uuid_pkg.UUID(emergency_id)  # Convert to UUID type
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid UUID format")
+
+
+    #Fetch Resource From DB From ID
+    stmt = select(Emergency).where(Emergency.id == emergency_uuid)
+    result = await db.execute(stmt)
+    emergency = result.scalars().first() 
+    if not emergency:
+        raise HTTPException(status_code=404, detail="Resource not found")
+    
+    #Delete Emergency
+    await db.delete(emergency)
+    await db.commit()
+    
+    return {"message": "Emergency Deleted"}
+
+
+
+
+
+
+
+#CHECK AFTER CRUD
+
+# @router.get("/api/devices/{device_id}/assignments", response_model=List[Alert], tags=["Devices"])
+# async def get_device_assignments(device_id: str):
+#     """Get alerts assigned to a specific device"""
+#     if device_id not in devices:
+#         raise HTTPException(status_code=404, detail="Device not found")
+    
+#     device = devices[device_id]
+#     device_type = device.type
+#     alert_type = get_alert_type_for_device(device_type)
+    
+#     assigned_alerts = []
+#     for alert_id, alert in alerts.items():
+#         if alert.status == "active" and alert.type == alert_type:
+#             if device_id in emergency_assignments.get_alert_devices(alert_id):
+#                 assigned_alerts.append(alert)
+    
+#     return assigned_alerts
+
+
+# I DO NOT KNOW WHAT IS IT FOR - ^^' - To Do - Check IF it works
+@router.get("/api/devices/{resource_id}/assignments", response_model=List[Emergency], tags=["Devices"])
+# async def get_device_assignments(device_id: str):
+async def get_device_assignments(resource_id: str, db: AsyncSession = Depends(get_db)):
+    """Get alerts assigned to a specific device"""
+    stmt = select(Resource).where(Resource.id == resource_id)
+    result = await db.execute(stmt)
+    if not result:
+        raise HTTPException(status_code=404, detail="Example not found")
+    return result.scalars().first()

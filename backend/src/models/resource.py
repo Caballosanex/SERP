@@ -67,24 +67,18 @@ class Resource(SQLModel, table=True):
         index=True,
         nullable=False,
     )
-    resource_type: str = Field(sa_column=Column(String(128), nullable=False))
+    resource_type: Optional[str] = Field(sa_column=Column(String(128), nullable=False))
 
-    # actual_address: Optional[uuid_pkg.UUID] = Field(default=None, foreign_key="addresses.id")
-    # actual_location: Optional[uuid_pkg.UUID] = Field(default=None, foreign_key="locations.id")
+    actual_address: Optional[uuid_pkg.UUID] = Field(default=None, foreign_key="address.id", ondelete="SET NULL")
+    actual_location: Optional[uuid_pkg.UUID] = Field(default=None, foreign_key="location.id", ondelete="SET NULL")
 
-    # normal_address: Optional[uuid_pkg.UUID] = Field(default=None, foreign_key="addresses.id")
-    # normal_location: Optional[uuid_pkg.UUID] = Field(default=None, foreign_key="locations.id")
+    normal_address: Optional[uuid_pkg.UUID] = Field(default=None, foreign_key="address.id", ondelete="SET NULL")
+    normal_location: Optional[uuid_pkg.UUID] = Field(default=None, foreign_key="location.id", ondelete="SET NULL")
 
-    actual_address: Optional[uuid_pkg.UUID] = Field(default=None, foreign_key="address.id")
-    actual_location: Optional[uuid_pkg.UUID] = Field(default=None, foreign_key="location.id")
-
-    normal_address: Optional[uuid_pkg.UUID] = Field(default=None, foreign_key="address.id")
-    normal_location: Optional[uuid_pkg.UUID] = Field(default=None, foreign_key="location.id")
-
-    status: ResourceStatusEnum = Column(Enum(ResourceStatusEnum), default=ResourceStatusEnum.UNKNOWN)
-    responsible: str = Field(sa_column=Column(String(128), nullable=False))
-    telephone: str = Field(sa_column=Column(String(128), nullable=False))
-    email: str = Field(sa_column=Column(String(128), nullable=False))
+    status: Optional[ResourceStatusEnum] = Field(sa_column=Column(Enum(ResourceStatusEnum), default=ResourceStatusEnum.UNKNOWN))
+    responsible: Optional[str] = Field(sa_column=Column(String(128), nullable=False))
+    telephone: Optional[str] = Field(sa_column=Column(String(128), nullable=False))
+    email: Optional[str] = Field(sa_column=Column(String(128), nullable=False))
 
     time_created: datetime = Field(sa_column=Column(DateTime(timezone=True), server_default=func.now()))
     time_updated: Optional[datetime] = Field(sa_column=Column(DateTime(timezone=True), onupdate=func.now()))

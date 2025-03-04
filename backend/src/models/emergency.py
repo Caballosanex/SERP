@@ -47,27 +47,16 @@ class Emergency(SQLModel, table=True):
     emergency_type: EmergencyType = Field(sa_column=Column(Enum(EmergencyType), default=EmergencyType.Altres))
     status: StatusType = Field(sa_column=Column(Enum(StatusType), default=StatusType.Active))
 
-    # location_emergency: Optional[uuid_pkg.UUID] = Field(default=None, foreign_key="locations.id")
-    # address_emergency: Optional[uuid_pkg.UUID] = Field(default=None, foreign_key="addresses.id")
+    location_emergency: Optional[uuid_pkg.UUID] = Field(default=None, foreign_key="location.id", ondelete="SET NULL")
+    address_emergency: Optional[uuid_pkg.UUID] = Field(default=None, foreign_key="address.id", ondelete="SET NULL")
 
-    # resource_id: Optional[uuid_pkg.UUID] = Field(default=None, foreign_key="resources.id")
-    # location_resource: Optional[uuid_pkg.UUID] = Field(default=None, foreign_key="locations.id")
-    # address_resource: Optional[uuid_pkg.UUID] = Field(default=None, foreign_key="addresses.id")
+    resource_id: Optional[uuid_pkg.UUID] = Field(default=None, foreign_key="resource.id", ondelete="SET NULL")
+    location_resource: Optional[uuid_pkg.UUID] = Field(default=None, foreign_key="location.id", ondelete="SET NULL")
+    address_resource: Optional[uuid_pkg.UUID] = Field(default=None, foreign_key="address.id", ondelete="SET NULL")
 
-    # destination_id: Optional[uuid_pkg.UUID] = Field(default=None, foreign_key="resources.id")
-    # location_destination: Optional[uuid_pkg.UUID] = Field(default=None, foreign_key="locations.id")
-    # address_destination: Optional[uuid_pkg.UUID] = Field(default=None, foreign_key="addresses.id")
-
-    location_emergency: Optional[uuid_pkg.UUID] = Field(default=None, foreign_key="location.id")
-    address_emergency: Optional[uuid_pkg.UUID] = Field(default=None, foreign_key="address.id")
-
-    resource_id: Optional[uuid_pkg.UUID] = Field(default=None, foreign_key="resource.id")
-    location_resource: Optional[uuid_pkg.UUID] = Field(default=None, foreign_key="location.id")
-    address_resource: Optional[uuid_pkg.UUID] = Field(default=None, foreign_key="address.id")
-
-    destination_id: Optional[uuid_pkg.UUID] = Field(default=None, foreign_key="resource.id")
-    location_destination: Optional[uuid_pkg.UUID] = Field(default=None, foreign_key="location.id")
-    address_destination: Optional[uuid_pkg.UUID] = Field(default=None, foreign_key="address.id")
+    destination_id: Optional[uuid_pkg.UUID] = Field(default=None, foreign_key="resource.id", ondelete="SET NULL")
+    location_destination: Optional[uuid_pkg.UUID] = Field(default=None, foreign_key="location.id", ondelete="SET NULL")
+    address_destination: Optional[uuid_pkg.UUID] = Field(default=None, foreign_key="address.id", ondelete="SET NULL")
 
     name_contact: str = Field(sa_column=Column(String(128)))
     telephone_contact: str = Field(sa_column=Column(String(128)))

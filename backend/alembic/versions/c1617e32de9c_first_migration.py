@@ -1,8 +1,8 @@
 """First migration
 
-Revision ID: 7fb884eae7b6
+Revision ID: c1617e32de9c
 Revises: 
-Create Date: 2025-03-03 15:43:04.480421
+Create Date: 2025-03-04 00:31:17.915927
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '7fb884eae7b6'
+revision: str = 'c1617e32de9c'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -66,16 +66,16 @@ def upgrade() -> None:
     sa.Column('actual_location', sa.Uuid(), nullable=True),
     sa.Column('normal_address', sa.Uuid(), nullable=True),
     sa.Column('normal_location', sa.Uuid(), nullable=True),
-    sa.Column('status', sa.Enum('UNKNOWN', 'ACTIVE', 'INACTIVE', 'RESTING', 'AVAILABLE', name='resourcestatusenum'), nullable=False),
+    sa.Column('status', sa.Enum('UNKNOWN', 'ACTIVE', 'INACTIVE', 'RESTING', 'AVAILABLE', name='resourcestatusenum'), nullable=True),
     sa.Column('responsible', sa.String(length=128), nullable=False),
     sa.Column('telephone', sa.String(length=128), nullable=False),
     sa.Column('email', sa.String(length=128), nullable=False),
     sa.Column('time_created', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
     sa.Column('time_updated', sa.DateTime(timezone=True), nullable=True),
-    sa.ForeignKeyConstraint(['actual_address'], ['address.id'], ),
-    sa.ForeignKeyConstraint(['actual_location'], ['location.id'], ),
-    sa.ForeignKeyConstraint(['normal_address'], ['address.id'], ),
-    sa.ForeignKeyConstraint(['normal_location'], ['location.id'], ),
+    sa.ForeignKeyConstraint(['actual_address'], ['address.id'], ondelete='SET NULL'),
+    sa.ForeignKeyConstraint(['actual_location'], ['location.id'], ondelete='SET NULL'),
+    sa.ForeignKeyConstraint(['normal_address'], ['address.id'], ondelete='SET NULL'),
+    sa.ForeignKeyConstraint(['normal_location'], ['location.id'], ondelete='SET NULL'),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_resource_id'), 'resource', ['id'], unique=False)
@@ -99,14 +99,14 @@ def upgrade() -> None:
     sa.Column('id_contact', sa.String(length=128), nullable=True),
     sa.Column('time_created', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
     sa.Column('time_updated', sa.DateTime(timezone=True), nullable=True),
-    sa.ForeignKeyConstraint(['address_destination'], ['address.id'], ),
-    sa.ForeignKeyConstraint(['address_emergency'], ['address.id'], ),
-    sa.ForeignKeyConstraint(['address_resource'], ['address.id'], ),
-    sa.ForeignKeyConstraint(['destination_id'], ['resource.id'], ),
-    sa.ForeignKeyConstraint(['location_destination'], ['location.id'], ),
-    sa.ForeignKeyConstraint(['location_emergency'], ['location.id'], ),
-    sa.ForeignKeyConstraint(['location_resource'], ['location.id'], ),
-    sa.ForeignKeyConstraint(['resource_id'], ['resource.id'], ),
+    sa.ForeignKeyConstraint(['address_destination'], ['address.id'], ondelete='SET NULL'),
+    sa.ForeignKeyConstraint(['address_emergency'], ['address.id'], ondelete='SET NULL'),
+    sa.ForeignKeyConstraint(['address_resource'], ['address.id'], ondelete='SET NULL'),
+    sa.ForeignKeyConstraint(['destination_id'], ['resource.id'], ondelete='SET NULL'),
+    sa.ForeignKeyConstraint(['location_destination'], ['location.id'], ondelete='SET NULL'),
+    sa.ForeignKeyConstraint(['location_emergency'], ['location.id'], ondelete='SET NULL'),
+    sa.ForeignKeyConstraint(['location_resource'], ['location.id'], ondelete='SET NULL'),
+    sa.ForeignKeyConstraint(['resource_id'], ['resource.id'], ondelete='SET NULL'),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_emergency_id'), 'emergency', ['id'], unique=False)
