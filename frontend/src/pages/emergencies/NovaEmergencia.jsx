@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
 import { 
   Box, 
   Typography, 
@@ -19,7 +18,6 @@ import { MapContainer, TileLayer, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import { useNavigate } from 'react-router-dom';
-import { createEmergency } from '../../redux/slices/emergenciesSlice';
 
 const MapComponent = ({ onLocationSelect }) => {
   useMapEvents({
@@ -33,7 +31,6 @@ const MapComponent = ({ onLocationSelect }) => {
 
 const NovaEmergencia = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
   const [resources, setResources] = useState([]);
   const [formData, setFormData] = React.useState({
     title: '',
@@ -48,7 +45,6 @@ const NovaEmergencia = () => {
 
   const [openMap, setOpenMap] = React.useState(false);
   const [showSuccess, setShowSuccess] = React.useState(false);
-  const [error, setError] = React.useState(null);
 
   useEffect(() => {
     // Cargar recursos disponibles
@@ -75,69 +71,55 @@ const NovaEmergencia = () => {
     setOpenMap(false);
   };
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = (event) => {
     event.preventDefault();
-    setError(null);
     
-    try {
-      // Crear nueva emergencia
-      const emergencyData = {
-        name: formData.title,
-        description: formData.description,
-        latitude: parseFloat(formData.latitude),
-        longitude: parseFloat(formData.longitude),
-        emergency_type: formData.type,
-        priority: formData.priority,
-        location: formData.location
-      };
+    // Crear nueva incidencia con ID único y fecha
+    const newIncident = {
+      ...formData,
+      id: Date.now(),
+      status: 'active',
+      lastUpdate: new Date().toISOString()
+    };
 
-      // Hacer la petición POST a localhost:5001/api/alerts
-      const response = await fetch('http://localhost:5001/api/alerts', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(emergencyData)
+    // Obtener incidencias existentes del LocalStorage
+    const existingIncidents = JSON.parse(localStorage.getItem('incidents') || '[]');
+    
+    // Añadir nueva incidencia
+    const updatedIncidents = [...existingIncidents, newIncident];
+    
+    // Actualizar el estado del recurso seleccionado
+    if (formData.selectedResource) {
+      const storedResources = JSON.parse(localStorage.getItem('resources') || '[]');
+      const updatedResources = storedResources.map(resource => {
+        if (resource.id === parseInt(formData.selectedResource)) {
+          return { ...resource, status: 'ocupado' };
+        }
+        return resource;
       });
-
-      if (!response.ok) {
-        throw new Error('Error al crear la emergència');
-      }
-
-      // Actualizar el estado del recurso seleccionado si existe
-      if (formData.selectedResource) {
-        const storedResources = JSON.parse(localStorage.getItem('resources') || '[]');
-        const updatedResources = storedResources.map(resource => {
-          if (resource.id === parseInt(formData.selectedResource)) {
-            return { ...resource, status: 'ocupado' };
-          }
-          return resource;
-        });
-        localStorage.setItem('resources', JSON.stringify(updatedResources));
-      }
-
-      // Mostrar mensaje de éxito y limpiar el formulario
-      setShowSuccess(true);
-      setFormData({
-        title: '',
-        description: '',
-        location: '',
-        type: '',
-        priority: '',
-        latitude: '',
-        longitude: '',
-        selectedResource: ''
-      });
-
-      // Ocultar el mensaje después de 3 segundos
-      setTimeout(() => {
-        setShowSuccess(false);
-        navigate('/emergencies/seguiment');
-      }, 3000);
-    } catch (err) {
-      setError('Error al crear la emergència. Si us plau, torna-ho a provar.');
-      console.error('Error creating emergency:', err);
+      localStorage.setItem('resources', JSON.stringify(updatedResources));
     }
+    
+    // Guardar en LocalStorage
+    localStorage.setItem('incidents', JSON.stringify(updatedIncidents));
+
+    // Mostrar mensaje de éxito y limpiar el formulario
+    setShowSuccess(true);
+    setFormData({
+      title: '',
+      description: '',
+      location: '',
+      type: '',
+      priority: '',
+      latitude: '',
+      longitude: '',
+      selectedResource: ''
+    });
+
+    // Ocultar el mensaje después de 3 segundos
+    setTimeout(() => {
+      setShowSuccess(false);
+    }, 3000);
   };
 
   const handleCancel = () => {
@@ -173,12 +155,6 @@ const NovaEmergencia = () => {
       {showSuccess && (
         <Alert severity="success" sx={{ mb: 2 }}>
           L'emergència s'ha creat correctament!
-        </Alert>
-      )}
-
-      {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {error}
         </Alert>
       )}
       
