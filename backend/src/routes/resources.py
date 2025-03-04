@@ -214,7 +214,7 @@ async def update_device(db: Annotated[AsyncSession, Depends(get_db)], resource_i
 
 
 # DELETE A RESOURCE
-@router.delete("/api/devices/{resource_id}", status_code=200)
+@router.delete("/api/devices/{resource_id}", status_code=200, tags=["Devices"])
 async def delete_device(db: Annotated[AsyncSession, Depends(get_db)], resource_id: str):
     """Delete a resource"""
     
