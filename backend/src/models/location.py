@@ -42,7 +42,7 @@ from sqlmodel import Field, Session, SQLModel, create_engine, select
 #     time_updated: Optional[datetime] = Column(DateTime(timezone=True), onupdate=func.now())
 
 class Location(SQLModel, table=True):
-    __tablename__ = "locations"
+    # __tablename__ = "locations"
 
     # id: uuid.UUID = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     id: uuid_pkg.UUID = Field(

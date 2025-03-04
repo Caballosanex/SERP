@@ -1,7 +1,7 @@
 #Import Nokia Api Service
 from src.services.opencameragateway import nokia_api_call
 from pydantic import BaseModel # type: ignore No warning about pydantic. Imported in requirements.txt
-from src.routes.resources import devices
+# from src.routes.resources import devices
 
 from fastapi import APIRouter, HTTPException # type: ignore No warning about pydantic. Imported in requirements.txt
 

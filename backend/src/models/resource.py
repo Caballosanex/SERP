@@ -45,8 +45,9 @@ from src.models.location import Location
 from src.models.address import Address
 from typing import Optional
 from datetime import datetime
-from sqlmodel import Field, Session, SQLModel, create_engine, select
+from sqlmodel import Field, Session, SQLModel, create_engine, select, Relationship
 from uuid import uuid4, UUID
+from src.models.emergencyresourceslink import EmergencyResourceLink
 
 # Enum for resource status
 class ResourceStatusEnum(str, enum.Enum):
@@ -57,7 +58,7 @@ class ResourceStatusEnum(str, enum.Enum):
     AVAILABLE = "Available"  # Corrected typo "AVAILIBLE" -> "AVAILABLE"
 
 class Resource(SQLModel, table=True):
-    __tablename__ = "resources"
+    # __tablename__ = "resources"
 
     # id: uuid.UUID = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     id: uuid_pkg.UUID = Field(
@@ -66,18 +67,20 @@ class Resource(SQLModel, table=True):
         index=True,
         nullable=False,
     )
-    resource_type: str = Field(sa_column=Column(String(128), nullable=False))
+    resource_type: Optional[str] = Field(sa_column=Column(String(128), nullable=False))
 
-    actual_address: Optional[uuid_pkg.UUID] = Field(default=None, foreign_key="addresses.id")
-    actual_location: Optional[uuid_pkg.UUID] = Field(default=None, foreign_key="locations.id")
+    actual_address: Optional[uuid_pkg.UUID] = Field(default=None, foreign_key="address.id", ondelete="SET NULL")
+    actual_location: Optional[uuid_pkg.UUID] = Field(default=None, foreign_key="location.id", ondelete="SET NULL")
 
-    normal_address: Optional[uuid_pkg.UUID] = Field(default=None, foreign_key="addresses.id")
-    normal_location: Optional[uuid_pkg.UUID] = Field(default=None, foreign_key="locations.id")
+    normal_address: Optional[uuid_pkg.UUID] = Field(default=None, foreign_key="address.id", ondelete="SET NULL")
+    normal_location: Optional[uuid_pkg.UUID] = Field(default=None, foreign_key="location.id", ondelete="SET NULL")
 
-    status: ResourceStatusEnum = Column(Enum(ResourceStatusEnum), default=ResourceStatusEnum.UNKNOWN)
-    responsible: str = Field(sa_column=Column(String(128), nullable=False))
-    telephone: str = Field(sa_column=Column(String(128), nullable=False))
-    email: str = Field(sa_column=Column(String(128), nullable=False))
+    status: Optional[ResourceStatusEnum] = Field(sa_column=Column(Enum(ResourceStatusEnum), default=ResourceStatusEnum.UNKNOWN))
+    responsible: Optional[str] = Field(sa_column=Column(String(128), nullable=False))
+    telephone: Optional[str] = Field(sa_column=Column(String(128), nullable=False))
+    email: Optional[str] = Field(sa_column=Column(String(128), nullable=False))
 
     time_created: datetime = Field(sa_column=Column(DateTime(timezone=True), server_default=func.now()))
     time_updated: Optional[datetime] = Field(sa_column=Column(DateTime(timezone=True), onupdate=func.now()))
+
+    emergencies: list["Emergency"] = Relationship(back_populates="resources", link_model=EmergencyResourceLink)
