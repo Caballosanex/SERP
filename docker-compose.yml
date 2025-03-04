@@ -10,7 +10,7 @@ services:
       - /app/__pycache__
     environment:
       - DEBUG=1
-    # command: ["sleep", "infinity"]
+    command: ["sleep", "infinity"]
     entrypoint: [/app/entrypoint.sh]
     command: >
       /bin/bash -c "chmod /app/entrypoint.sh"
