@@ -73,7 +73,8 @@ const MainLayout = () => {
   
   // Menú lateral según el rol del usuario
   const getSidebarItems = () => {
-    const commonItems = [
+    // Elementos básicos que todos los roles pueden ver
+    const basicItems = [
       {
         text: 'Tauler Principal',
         icon: <DashboardIcon />,
@@ -98,30 +99,37 @@ const MainLayout = () => {
         text: 'Recursos',
         icon: <ResourcesIcon />,
         path: '/devices/resources'
-      },
+      }
+    ];
+
+    // Elementos adicionales según el rol
+    const adminItems = [
       {
         text: 'Gestió Usuaris',
         icon: <PeopleIcon />,
         path: '/usuaris'
       }
     ];
+
+    const resourceItems = [
+      {
+        text: 'El Meu Dispositiu',
+        icon: <LocationIcon />,
+        path: '/my-device'
+      }
+    ];
     
+    // Determinar qué elementos mostrar según el rol
     if (user?.role === 'emergency_center') {
-      return commonItems;
+      return [...basicItems, ...adminItems];
     } else if (user?.role === 'resource_personnel') {
-      return [
-        ...commonItems,
-        {
-          text: 'El Meu Dispositiu',
-          icon: <LocationIcon />,
-          path: '/my-device'
-        }
-      ];
+      return [...basicItems, ...resourceItems];
     } else if (user?.role === 'emergency_operator') {
-      return commonItems;
+      return basicItems;
     }
     
-    return commonItems;
+    // Por defecto, mostrar solo elementos básicos
+    return basicItems;
   };
   
   return (
