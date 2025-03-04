@@ -69,7 +69,7 @@ docker-compose up frontend
   - Email: admin@serp.cat
   - Password: admin123
 
-- **Personal de Recursos**:
+- **Operador de Recursos**:
   - Email: resource@serp.cat
   - Password: resources123
 

@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { 
   Grid, 
   Paper, 
@@ -27,19 +26,41 @@ import {
 } from '@mui/icons-material';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import { fetchEmergencies } from '../../redux/slices/emergenciesSlice';
-import { fetchResources } from '../../redux/slices/resourcesSlice';
-import { fetchAlerts } from '../../redux/slices/alertsSlice';
-import { setCurrentView } from '../../redux/slices/uiSlice';
 
 // Panel de estadísticas
 const StatPanel = ({ title, value, color }) => (
-  <Card elevation={2} sx={{ height: '100%' }}>
-    <CardContent>
-      <Typography variant="h6" color="textSecondary" gutterBottom>
+  <Card elevation={2} sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <CardContent sx={{ 
+      flex: 1, 
+      display: 'flex', 
+      flexDirection: 'column',
+      justifyContent: 'space-between',
+      minHeight: '150px'  // Altura mínima fija para todos los paneles
+    }}>
+      <Typography 
+        variant="h6" 
+        color="textSecondary" 
+        sx={{ 
+          minHeight: '48px',  // Altura fija para el título
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          textAlign: 'center'
+        }}
+      >
         {title}
       </Typography>
-      <Typography variant="h3" color={color} align="center">
+      <Typography 
+        variant="h3" 
+        color={color} 
+        align="center"
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flex: 1
+        }}
+      >
         {value}
       </Typography>
     </CardContent>
@@ -48,23 +69,70 @@ const StatPanel = ({ title, value, color }) => (
 
 // Componente de dashboard
 const Dashboard = () => {
-  const dispatch = useDispatch();
   const [tabValue, setTabValue] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentView, setCurrentView] = useState('list');
+  const [isLoading, setIsLoading] = useState(true);
   
-  const emergencies = useSelector(state => state.emergencies.emergencies);
-  const emergenciesStatus = useSelector(state => state.emergencies.status);
-  const resources = useSelector(state => state.resources.resources);
-  const resourcesStatus = useSelector(state => state.resources.status);
-  const alerts = useSelector(state => state.alerts.alerts);
-  const alertsStatus = useSelector(state => state.alerts.status);
-  const currentView = useSelector(state => state.ui.currentView);
-  
+  // Estados para los datos
+  const [emergencies, setEmergencies] = useState([]);
+  const [resources, setResources] = useState([]);
+
+  // Cargar y sincronizar datos desde localStorage
+  useEffect(() => {
+    const loadData = () => {
+      setIsLoading(true);
+      try {
+        // Cargar emergencias
+        const savedIncidents = localStorage.getItem('incidents');
+        if (savedIncidents) {
+          setEmergencies(JSON.parse(savedIncidents));
+        }
+        
+        // Cargar recursos
+        const savedResources = localStorage.getItem('resources');
+        if (savedResources) {
+          setResources(JSON.parse(savedResources));
+        }
+      } catch (error) {
+        console.error('Error al cargar datos:', error);
+      }
+      setIsLoading(false);
+    };
+
+    // Cargar datos inicialmente
+    loadData();
+
+    // Escuchar cambios en localStorage
+    const handleStorageChange = (e) => {
+      if (e.key === 'incidents') {
+        const savedIncidents = localStorage.getItem('incidents');
+        if (savedIncidents) {
+          setEmergencies(JSON.parse(savedIncidents));
+        }
+      }
+      if (e.key === 'resources') {
+        const savedResources = localStorage.getItem('resources');
+        if (savedResources) {
+          setResources(JSON.parse(savedResources));
+        }
+      }
+    };
+
+    // Suscribirse a cambios en localStorage
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Cleanup
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
+
   // Filtrar emergencias por búsqueda
   const filteredEmergencies = emergencies.filter(emergency => 
-    emergency.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    emergency.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    emergency.description.toLowerCase().includes(searchTerm.toLowerCase())
+    emergency.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    emergency.location?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    emergency.description?.toLowerCase().includes(searchTerm.toLowerCase())
   );
   
   // Estadísticas
@@ -72,20 +140,19 @@ const Dashboard = () => {
   const pendingEmergencies = emergencies.filter(e => e.status === 'pending').length;
   const resolvedEmergencies = emergencies.filter(e => e.status === 'resolved').length;
   const totalResources = resources.length;
-  const assignedResources = resources.filter(r => r.emergencyId).length;
-  const activeAlerts = alerts.filter(a => !a.resolved).length;
-  
-  useEffect(() => {
-    // Cargar datos al montar el componente
-    dispatch(fetchEmergencies());
-    dispatch(fetchResources());
-    dispatch(fetchAlerts());
-  }, [dispatch]);
+  const availableResources = resources.filter(r => r.status === 'disponible').length;
+  const busyResources = resources.filter(r => r.status === 'ocupado').length;
+  const maintenanceResources = resources.filter(r => r.status === 'mantenimiento').length;
   
   const handleRefresh = () => {
-    dispatch(fetchEmergencies());
-    dispatch(fetchResources());
-    dispatch(fetchAlerts());
+    const savedIncidents = localStorage.getItem('incidents');
+    if (savedIncidents) {
+      setEmergencies(JSON.parse(savedIncidents));
+    }
+    const savedResources = localStorage.getItem('resources');
+    if (savedResources) {
+      setResources(JSON.parse(savedResources));
+    }
   };
   
   const handleTabChange = (event, newValue) => {
@@ -93,19 +160,13 @@ const Dashboard = () => {
   };
   
   const handleViewChange = (view) => {
-    dispatch(setCurrentView(view));
+    setCurrentView(view);
   };
   
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
   };
   
-  // Verificar si los datos están cargando
-  const isLoading = 
-    emergenciesStatus === 'loading' || 
-    resourcesStatus === 'loading' || 
-    alertsStatus === 'loading';
-    
   return (
     <Box sx={{ flexGrow: 1 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
@@ -147,22 +208,27 @@ const Dashboard = () => {
         </Grid>
         <Grid item xs={12} sm={6} md={2}>
           <StatPanel 
-            title="Recursos Totals" 
+            title={
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <span>Recursos</span>
+                <span>Totals</span>
+              </Box>
+            }
             value={totalResources} 
             color="info.main" 
           />
         </Grid>
         <Grid item xs={12} sm={6} md={2}>
           <StatPanel 
-            title="Recursos Assignats" 
-            value={assignedResources} 
-            color="secondary.main" 
+            title="Recursos Disponibles" 
+            value={availableResources} 
+            color="success.main" 
           />
         </Grid>
         <Grid item xs={12} sm={6} md={2}>
           <StatPanel 
-            title="Alertes Actives" 
-            value={activeAlerts} 
+            title="Recursos Ocupats" 
+            value={busyResources} 
             color="error.main" 
           />
         </Grid>
@@ -174,7 +240,6 @@ const Dashboard = () => {
           <Tabs value={tabValue} onChange={handleTabChange}>
             <Tab label="Emergències" />
             <Tab label="Recursos" />
-            <Tab label="Alertes" />
           </Tabs>
           
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -267,23 +332,119 @@ const Dashboard = () => {
                     No s'han trobat emergències
                   </Typography>
                 ) : (
-                  <Grid container spacing={2}>
-                    {filteredEmergencies.map(emergency => (
-                      <Grid item xs={12} key={emergency.id}>
-                        <Card variant="outlined">
+                  <>
+                    {/* Título para emergencias activas y pendientes */}
+                    <Typography variant="h6" color="textSecondary" sx={{ mb: 2 }}>
+                      Emergències Actives
+                    </Typography>
+
+                    {/* Emergencias activas y pendientes */}
+                    <Grid container spacing={2} sx={{ mb: 4 }}>
+                      {filteredEmergencies
+                        .filter(emergency => emergency.status !== 'resolved')
+                        .map(emergency => (
+                          <Grid item xs={12} key={emergency.id}>
+                            <Card variant="outlined">
+                              <CardHeader
+                                title={emergency.title}
+                                subheader={`Ubicació: ${emergency.location}`}
+                                action={
+                                  <Chip 
+                                    label={emergency.status === 'active' ? 'Activa' : 'Pendent'} 
+                                    color={emergency.status === 'active' ? 'error' : 'warning'} 
+                                  />
+                                }
+                              />
+                              <CardContent>
+                                <Typography variant="body2" color="textSecondary">
+                                  {emergency.description}
+                                </Typography>
+                              </CardContent>
+                            </Card>
+                          </Grid>
+                      ))}
+                    </Grid>
+
+                    {/* Separador y título para emergencias resueltas */}
+                    {filteredEmergencies.some(e => e.status === 'resolved') && (
+                      <>
+                        <Divider sx={{ my: 3 }} />
+                        <Typography variant="h6" color="textSecondary" sx={{ mb: 2 }}>
+                          Emergències Resoltes
+                        </Typography>
+                      </>
+                    )}
+
+                    {/* Emergencias resueltas */}
+                    <Grid container spacing={1}>
+                      {filteredEmergencies
+                        .filter(emergency => emergency.status === 'resolved')
+                        .map(emergency => (
+                          <Grid item xs={12} sm={6} md={4} key={emergency.id}>
+                            <Card variant="outlined" sx={{ opacity: 0.8 }}>
+                              <CardHeader
+                                title={
+                                  <Typography variant="subtitle1">
+                                    {emergency.title}
+                                  </Typography>
+                                }
+                                subheader={
+                                  <Typography variant="caption">
+                                    {`Ubicació: ${emergency.location}`}
+                                  </Typography>
+                                }
+                                action={
+                                  <Chip 
+                                    size="small"
+                                    label="Resolta" 
+                                    color="success" 
+                                  />
+                                }
+                              />
+                              <CardContent sx={{ py: 1 }}>
+                                <Typography variant="body2" color="textSecondary" sx={{ fontSize: '0.875rem' }}>
+                                  {emergency.description}
+                                </Typography>
+                              </CardContent>
+                            </Card>
+                          </Grid>
+                      ))}
+                    </Grid>
+                  </>
+                )}
+              </Box>
+            )}
+            
+            {/* Contenido para recursos */}
+            {tabValue === 1 && (
+              <Box>
+                {resources.length === 0 ? (
+                  <Typography align="center" color="textSecondary" sx={{ py: 3 }}>
+                    No s'han trobat recursos
+                  </Typography>
+                ) : (
+                  <Grid container spacing={3}>
+                    {resources.map((resource) => (
+                      <Grid item xs={12} sm={6} md={4} key={resource.id}>
+                        <Card>
                           <CardHeader
-                            title={emergency.title}
-                            subheader={`Ubicació: ${emergency.location}`}
+                            title={resource.name}
+                            subheader={`Tipus: ${resource.type}`}
                             action={
-                              <Chip 
-                                label={emergency.status === 'active' ? 'Activa' : emergency.status === 'pending' ? 'Pendent' : 'Resolta'} 
-                                color={emergency.status === 'active' ? 'error' : emergency.status === 'pending' ? 'warning' : 'success'} 
+                              <Chip
+                                label={resource.status}
+                                color={resource.status === 'disponible' ? 'success' : 
+                                       resource.status === 'ocupado' ? 'error' : 'warning'}
+                                size="small"
                               />
                             }
                           />
                           <CardContent>
-                            <Typography variant="body2" color="textSecondary">
-                              {emergency.description}
+                            <Typography variant="body2" color="text.secondary">
+                              Ubicació: {resource.location}
+                            </Typography>
+                            <Typography variant="caption" display="block" sx={{ mt: 1 }}>
+                              Última actualització: {new Date(resource.lastUpdate).toLocaleString()}
                             </Typography>
                           </CardContent>
                         </Card>
@@ -292,20 +453,6 @@ const Dashboard = () => {
                   </Grid>
                 )}
               </Box>
-            )}
-            
-            {/* Contenido para recursos */}
-            {tabValue === 1 && (
-              <Typography>
-                Contingut de recursos
-              </Typography>
-            )}
-            
-            {/* Contenido para alertas */}
-            {tabValue === 2 && (
-              <Typography>
-                Contingut d'alertes
-              </Typography>
             )}
           </>
         )}

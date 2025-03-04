@@ -8,8 +8,7 @@ import {
   Alert, 
   CircularProgress,
   InputAdornment,
-  IconButton,
-  Typography
+  IconButton
 } from '@mui/material';
 import { 
   Visibility, 
@@ -26,7 +25,14 @@ const Login = () => {
   });
   
   const [showPassword, setShowPassword] = useState(false);
-  const [formErrors, setFormErrors] = useState({});
+  const [formErrors, setFormErrors] = useState({
+    email: '',
+    password: ''
+  });
+  const [touched, setTouched] = useState({
+    email: false,
+    password: false
+  });
   
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -35,40 +41,56 @@ const Login = () => {
       [name]: value
     }));
     
-    // Limpiar errores cuando el usuario escribe
-    if (formErrors[name]) {
-      setFormErrors((prev) => ({
-        ...prev,
-        [name]: ''
-      }));
+    // Validar el campo cuando cambia
+    validateField(name, value);
+  };
+
+  const validateField = (fieldName, value) => {
+    let error = '';
+    
+    if (touched[fieldName] && !value) {
+      error = 'Aquest camp és obligatori';
+    } else if (fieldName === 'email' && touched.email) {
+      const emailRegex = /\S+@\S+\.\S+/;
+      if (!emailRegex.test(value)) {
+        error = 'El correu electrònic no és vàlid';
+      }
     }
+    
+    setFormErrors(prev => ({
+      ...prev,
+      [fieldName]: error
+    }));
+  };
+  
+  const handleBlur = (e) => {
+    const { name } = e.target;
+    setTouched(prev => ({
+      ...prev,
+      [name]: true
+    }));
+    validateField(name, formData[name]);
   };
   
   const handleClickShowPassword = () => {
     setShowPassword((prev) => !prev);
   };
   
-  const validateForm = () => {
-    const errors = {};
-    
-    if (!formData.email) {
-      errors.email = 'El correu electrònic és obligatori';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      errors.email = 'El correu electrònic no és vàlid';
-    }
-    
-    if (!formData.password) {
-      errors.password = 'La contrasenya és obligatòria';
-    }
-    
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
-  
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!validateForm()) {
+    // Marcar todos los campos como tocados
+    setTouched({
+      email: true,
+      password: true
+    });
+    
+    // Validar todos los campos
+    validateField('email', formData.email);
+    validateField('password', formData.password);
+    
+    // Verificar si hay errores
+    if (!formData.email || !formData.password) {
       return;
     }
     
@@ -90,10 +112,7 @@ const Login = () => {
   };
   
   return (
-    <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
-      <Typography variant="h5" align="center" gutterBottom>
-        Iniciar Sessió
-      </Typography>
+    <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 2 }}>
       
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
@@ -103,7 +122,6 @@ const Login = () => {
       
       <TextField
         margin="normal"
-        required
         fullWidth
         id="email"
         label="Correu electrònic"
@@ -112,14 +130,21 @@ const Login = () => {
         autoFocus
         value={formData.email}
         onChange={handleChange}
+        onBlur={handleBlur}
         error={!!formErrors.email}
         helperText={formErrors.email}
         disabled={isLoading}
+        sx={{
+          '& .MuiOutlinedInput-root': {
+            '& fieldset': {
+              borderColor: formErrors.email ? 'error.main' : 'inherit',
+            },
+          },
+        }}
       />
       
       <TextField
         margin="normal"
-        required
         fullWidth
         name="password"
         label="Contrasenya"
@@ -128,9 +153,17 @@ const Login = () => {
         autoComplete="current-password"
         value={formData.password}
         onChange={handleChange}
+        onBlur={handleBlur}
         error={!!formErrors.password}
         helperText={formErrors.password}
         disabled={isLoading}
+        sx={{
+          '& .MuiOutlinedInput-root': {
+            '& fieldset': {
+              borderColor: formErrors.password ? 'error.main' : 'inherit',
+            },
+          },
+        }}
         InputProps={{
           endAdornment: (
             <InputAdornment position="end">
@@ -151,7 +184,7 @@ const Login = () => {
         fullWidth
         variant="contained"
         sx={{ mt: 3, mb: 2 }}
-        disabled={isLoading}
+        disabled={isLoading || !!formErrors.email || !!formErrors.password}
       >
         {isLoading ? (
           <CircularProgress size={24} color="inherit" />
