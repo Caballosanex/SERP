@@ -216,6 +216,9 @@ CREATE SCHEMA public;
 - Theme switching (light/dark mode)
 - Mobile responsive design
 
+## Presentation link
+![Presentation](https://www.figma.com/design/7FVEIVQaa3edF0PTWYvUGs/SERP?node-id=0-1&t=mejRacq9bFvye6t8-1)
+
 ## Contributing
 
 1. Fork the repository
