@@ -122,7 +122,7 @@ class EmergencyUpdateRequest(BaseModel):
 
 from src.models.emergencyresourceslink import EmergencyResourceLink
 
-@router.patch("/api/alerts/{alert_id}", response_class=ORJSONResponse)
+@router.patch("/api/alerts/{alert_id}", response_class=ORJSONResponse, tags=["Alerts"])
 async def update_alert(alert_id: str, request: EmergencyUpdateRequest, db: AsyncSession = Depends(get_db)):
     """Update an alert"""
     stmt = select(Emergency).where(Emergency.id == alert_id)
@@ -165,7 +165,7 @@ async def update_alert(alert_id: str, request: EmergencyUpdateRequest, db: Async
     return [{"emergecy_id": str(emergency.id), "message": "Updated"}]
 
 # DELETE A EMERGENCY
-@router.delete("/api/alerts/{emergency_id}", status_code=200)
+@router.delete("/api/alerts/{emergency_id}", status_code=200, tags=["Alerts"])
 async def delete_device(db: Annotated[AsyncSession, Depends(get_db)], emergency_id: str):
     """Delete an emergency"""
 
@@ -216,7 +216,7 @@ async def delete_device(db: Annotated[AsyncSession, Depends(get_db)], emergency_
 
 
 # I DO NOT KNOW WHAT IS IT FOR - ^^' - To Do - Check IF it works
-@router.get("/api/devices/{resource_id}/assignments", response_model=List[Emergency], tags=["Devices"])
+@router.get("/api/devices/{resource_id}/assignments", response_model=List[Emergency], tags=["Alerts"])
 # async def get_device_assignments(device_id: str):
 async def get_device_assignments(resource_id: str, db: AsyncSession = Depends(get_db)):
     """Get alerts assigned to a specific device"""
