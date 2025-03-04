@@ -208,7 +208,12 @@ const Dashboard = () => {
         </Grid>
         <Grid item xs={12} sm={6} md={2}>
           <StatPanel 
-            title="Recursos Totals" 
+            title={
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <span>Recursos</span>
+                <span>Totals</span>
+              </Box>
+            }
             value={totalResources} 
             color="info.main" 
           />

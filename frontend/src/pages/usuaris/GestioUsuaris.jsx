@@ -29,6 +29,7 @@ import {
   Delete as DeleteIcon,
   Add as AddIcon
 } from '@mui/icons-material';
+import { MOCK_USERS } from '../../context/AuthContext';
 
 const GestioUsuaris = () => {
   const [users, setUsers] = React.useState([]);
@@ -36,20 +37,42 @@ const GestioUsuaris = () => {
   const [openDeleteDialog, setOpenDeleteDialog] = React.useState(false);
   const [selectedUser, setSelectedUser] = React.useState(null);
   const [userToDelete, setUserToDelete] = React.useState(null);
+  const [visiblePasswords, setVisiblePasswords] = React.useState({});
   const [formData, setFormData] = React.useState({
     name: '',
     email: '',
     role: '',
-    status: 'active'
+    status: 'active',
+    password: ''
   });
 
-  // Cargar usuarios desde localStorage al iniciar
+  // Cargar usuarios desde localStorage al iniciar, o usar MOCK_USERS si no hay datos
   React.useEffect(() => {
-    const storedUsers = localStorage.getItem('users');
-    if (storedUsers) {
-      setUsers(JSON.parse(storedUsers));
+    try {
+      const storedUsers = localStorage.getItem('users');
+      
+      if (storedUsers) {
+        // Si hay usuarios en localStorage, usarlos
+        const parsedUsers = JSON.parse(storedUsers);
+        setUsers(parsedUsers);
+      } else {
+        // Si no hay usuarios, inicializar con MOCK_USERS
+        console.log('No hay usuarios en localStorage, usando MOCK_USERS');
+        const initialUsers = MOCK_USERS.map(user => ({
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          password: user.password,
+          status: 'active'
+        }));
+        setUsers(initialUsers);
+        localStorage.setItem('users', JSON.stringify(initialUsers));
+      }
+    } catch (error) {
+      console.error('Error al cargar usuarios:', error);
     }
-  }, []);
+  }, []); // Solo se ejecutará una vez al montar el componente
 
   const handleEditClick = (user) => {
     setSelectedUser(user);
@@ -64,7 +87,8 @@ const GestioUsuaris = () => {
       name: '',
       email: '',
       role: '',
-      status: 'active'
+      status: 'active',
+      password: ''
     });
   };
 
@@ -128,6 +152,13 @@ const GestioUsuaris = () => {
     }
   };
 
+  const togglePasswordVisibility = (userId) => {
+    setVisiblePasswords(prev => ({
+      ...prev,
+      [userId]: !prev[userId]
+    }));
+  };
+
   return (
     <Box sx={{ flexGrow: 1 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
@@ -154,6 +185,7 @@ const GestioUsuaris = () => {
               <TableCell>Correu Electrònic</TableCell>
               <TableCell>Rol</TableCell>
               <TableCell>Estat</TableCell>
+              <TableCell>Contrasenya</TableCell>
               <TableCell align="right">Accions</TableCell>
             </TableRow>
           </TableHead>
@@ -169,6 +201,20 @@ const GestioUsuaris = () => {
                     color={user.status === 'active' ? 'success' : 'default'}
                     size="small"
                   />
+                </TableCell>
+                <TableCell>
+                  <Box
+                    onClick={() => togglePasswordVisibility(user.id)}
+                    sx={{
+                      cursor: 'pointer',
+                      filter: visiblePasswords[user.id] ? 'none' : 'blur(4px)',
+                      '&:hover': {
+                        opacity: 0.8
+                      }
+                    }}
+                  >
+                    {user.password}
+                  </Box>
                 </TableCell>
                 <TableCell align="right">
                   <IconButton size="small" onClick={() => handleEditClick(user)}>
@@ -211,6 +257,16 @@ const GestioUsuaris = () => {
                   type="email"
                   name="email"
                   value={formData.email}
+                  onChange={handleInputChange}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Contrasenya"
+                  type="text"
+                  name="password"
+                  value={formData.password}
                   onChange={handleInputChange}
                 />
               </Grid>

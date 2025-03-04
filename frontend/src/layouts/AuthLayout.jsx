@@ -5,18 +5,11 @@ import {
   Box, 
   Container, 
   Paper, 
-  Typography, 
-  IconButton, 
-  AppBar, 
-  Toolbar 
+  Typography
 } from '@mui/material';
-import { 
-  Brightness4 as Brightness4Icon,
-  Brightness7 as Brightness7Icon 
-} from '@mui/icons-material';
 
 const AuthLayout = () => {
-  const { mode, toggleTheme } = useTheme();
+  const { mode } = useTheme();
   
   return (
     <Box 
@@ -28,17 +21,6 @@ const AuthLayout = () => {
           theme.palette.mode === 'dark' ? theme.palette.background.default : theme.palette.primary.light
       }}
     >
-      <AppBar position="static" color="transparent" elevation={0}>
-        <Toolbar>
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            SERP - Sistema d'Emergències i Resposta Prioritaria
-          </Typography>
-          <IconButton onClick={toggleTheme} color="inherit">
-            {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
-          </IconButton>
-        </Toolbar>
-      </AppBar>
-      
       <Container 
         maxWidth="sm" 
         sx={{ 
@@ -67,8 +49,19 @@ const AuthLayout = () => {
               alignItems: 'center' 
             }}
           >
+            <Box
+              component="img"
+              src="/resources/SERP_ico_N.png"
+              alt="SERP Logo"
+              sx={{
+                width: 200,
+                height: 'auto',
+                mb: 2,
+                objectFit: 'contain'
+              }}
+            />
             <Typography component="h1" variant="h4" align="center" gutterBottom>
-              SERP
+              S.E.R.P
             </Typography>
             <Typography variant="body1" align="center" color="textSecondary">
               Sistema d'Emergències i Resposta Prioritaria

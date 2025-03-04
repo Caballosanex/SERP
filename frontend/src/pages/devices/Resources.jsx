@@ -67,8 +67,8 @@ const Resources = () => {
         {
           id: 2,
           name: 'Patrulla 1',
-          type: 'policía',
-          status: 'ocupado',
+          type: 'policia',
+          status: 'disponible',
           location: 'Barcelona',
           lastUpdate: '2024-03-03T13:30:00'
         },
@@ -169,8 +169,14 @@ const Resources = () => {
             variant="outlined"
             startIcon={<RefreshIcon />}
             onClick={handleRefresh}
+            disabled={isLoading}
+            sx={{
+              '&:disabled': {
+                backgroundColor: 'action.disabledBackground',
+              }
+            }}
           >
-            Actualitzar
+            {isLoading ? 'Actualitzant...' : 'Actualitzar'}
           </Button>
         </Box>
       </Box>
@@ -201,7 +207,7 @@ const Resources = () => {
                 onChange={handleInputChange}
               >
                 <MenuItem value="ambulancia">Ambulància</MenuItem>
-                <MenuItem value="policía">Policia</MenuItem>
+                <MenuItem value="policia">Policia</MenuItem>
                 <MenuItem value="bombero">Bomber</MenuItem>
               </Select>
             </FormControl>
@@ -267,13 +273,31 @@ const Resources = () => {
                     />
                   }
                 />
-                <CardContent>
+                <CardContent sx={{ position: 'relative', pb: '16px !important' }}>
                   <Typography variant="body2" color="text.secondary">
                     Ubicació: {resource.location}
                   </Typography>
                   <Typography variant="caption" display="block" sx={{ mt: 1 }}>
                     Última actualització: {new Date(resource.lastUpdate).toLocaleString()}
                   </Typography>
+                  <Box sx={{ 
+                    position: 'absolute',
+                    bottom: '8px',
+                    right: '16px'
+                  }}>
+                    <img 
+                      src={`${process.env.PUBLIC_URL}/resources/${
+                           resource.type === 'ambulancia' ? 'Ambulancia.png' : 
+                           resource.type === 'policia' ? 'Policia.png' : 
+                           resource.type === 'bombero' ? 'Bomberos.png' : ''}`}
+                      alt={`Icono de ${resource.type}`}
+                      style={{ width: '40px', height: '40px', objectFit: 'contain' }}
+                      onError={(e) => {
+                        console.error('Error loading image:', e.target.src);
+                        console.log('Resource type:', resource.type);
+                      }}
+                    />
+                  </Box>
                 </CardContent>
               </Card>
             </Grid>

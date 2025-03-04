@@ -7,7 +7,7 @@ const AuthContext = createContext(null);
 export const useAuth = () => useContext(AuthContext);
 
 // Credenciales predeterminadas para simulación
-const MOCK_USERS = [
+export const MOCK_USERS = [
   {
     id: '1',
     email: 'admin@serp.cat',
@@ -54,6 +54,18 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Inicializar usuarios MOCK en localStorage si no existen
+  useEffect(() => {
+    const storedUsers = localStorage.getItem('users');
+    if (!storedUsers) {
+      const initialUsers = MOCK_USERS.map(user => ({
+        ...user,
+        status: 'active'
+      }));
+      localStorage.setItem('users', JSON.stringify(initialUsers));
+    }
+  }, []);
 
   useEffect(() => {
     const checkToken = async () => {
@@ -103,13 +115,22 @@ export const AuthProvider = ({ children }) => {
     try {
       setIsLoading(true);
       
-      // Simulamos la verificación de credenciales
-      const foundUser = MOCK_USERS.find(
+      // Obtener usuarios del localStorage
+      const storedUsers = localStorage.getItem('users');
+      const localUsers = storedUsers ? JSON.parse(storedUsers) : [];
+      
+      // Buscar el usuario en la lista combinada de usuarios
+      const foundUser = localUsers.find(
         u => u.email === email && u.password === password
       );
       
       if (!foundUser) {
         throw new Error('Credencials incorrectes');
+      }
+
+      // Verificar si el usuario está activo
+      if (foundUser.status === 'inactive') {
+        throw new Error('Aquest usuari està desactivat');
       }
       
       // Generar un token simulado
@@ -135,6 +156,9 @@ export const AuthProvider = ({ children }) => {
       return userData.role;
     } catch (err) {
       setError(err.message || 'Error en l\'autenticació');
+      setTimeout(() => {
+        setError(null);
+      }, 3000);
       throw err;
     } finally {
       setIsLoading(false);
