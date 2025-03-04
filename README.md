@@ -217,7 +217,7 @@ CREATE SCHEMA public;
 - Mobile responsive design
 
 ## Presentation link
-![Presentation](https://www.figma.com/design/7FVEIVQaa3edF0PTWYvUGs/SERP?node-id=0-1&t=mejRacq9bFvye6t8-1)
+[![Presentation](https://www.figma.com/design/7FVEIVQaa3edF0PTWYvUGs/SERP?node-id=0-1&t=mejRacq9bFvye6t8-1)](https://www.figma.com/design/7FVEIVQaa3edF0PTWYvUGs/SERP?node-id=0-1&t=mejRacq9bFvye6t8-1)
 
 ## Contributing
 
